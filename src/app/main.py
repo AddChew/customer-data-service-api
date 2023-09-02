@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 from src.app.deployment import Deployment
 
-
-print(load_dotenv(dotenv_path = "./../.env")) # TODO: fix dotenv issue
+load_dotenv()
 deployment = Deployment.bind()
