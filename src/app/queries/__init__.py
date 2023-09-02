@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from strawberry import type, field
 from src.app.database import database
 from src.app.authorization import IsAuthorized
@@ -34,23 +34,37 @@ class Query:
         return check_account_exists(accNum)
     
     @field(permission_classes = permission_classes)
-    def getTransaction(transId: str) -> Transaction:
+    def getTransaction(refId: str) -> Transaction:
         for transaction in database["transactions"]:
-            if transaction.transId == transId:
+            if transaction.refId == refId:
                 return transaction
         raise Exception("Transaction does not exist")
     
     @field(permission_classes = permission_classes)
     def getAccounts(cif: str) -> List[Account]:
         check_customer_exists(cif)
-        return list(filter(lambda account: account.cif == cif, database["accounts"]))
+        return list(filter(lambda account: account.accHolderCif == cif, database["accounts"]))
     
     @field(permission_classes = permission_classes)
-    def getTransactionsByCif(cif: str) -> List[Transaction]:
+    def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]: # TODO: debit, credit, fromCif or toCif
         check_customer_exists(cif)
-        return list(filter(lambda transaction: transaction.cif == cif, database["transactions"]))
-    
+
+        if transaction_type == "credit":
+            return list(filter(lambda transaction: transaction.toCif == cif, database["transactions"]))
+
+        if transaction_type == "debit":
+            return list(filter(lambda transaction: transaction.fromCif == cif, database["transactions"]))
+        
+        return list(filter(lambda transaction: (transaction.fromCif == cif) or (transaction.toCif == cif), database["transactions"])) 
+
     @field(permission_classes = permission_classes)
-    def getTransactionsByAccNum(accNum: str) -> List[Transaction]:
+    def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
         check_account_exists(accNum)
-        return list(filter(lambda transaction: transaction.accNum == accNum, database["transactions"]))  
+
+        if transaction_type == "credit":
+            return list(filter(lambda transaction: transaction.toAccNum == accNum, database["transactions"]))
+
+        if transaction_type == "debit":
+            return list(filter(lambda transaction: transaction.fromAccNum == accNum, database["transactions"]))
+        
+        return list(filter(lambda transaction: (transaction.fromAccNum == accNum) or (transaction.toAccNum == accNum), database["transactions"]))
