@@ -6,7 +6,7 @@ from strawberry import type
 class Customer:
     cif: str
     name: str
-    date_of_birth: date
+    dateOfBirth: date
     address: str
     nationality: str
-    join_date: date 
+    joinDate: date 
