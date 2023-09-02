@@ -22,5 +22,5 @@ ACCESS_KEY=<your generated access key>
 
 5. Execute the following terminal command
 ```
-serve run main:deployment
+serve run app.main:deployment
 ```
