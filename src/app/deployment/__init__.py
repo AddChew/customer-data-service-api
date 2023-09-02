@@ -19,7 +19,7 @@ def setup_app():
     return app
 
 
-@serve.deployment(name = 'Customer Data Service', num_replicas = 2)
+@serve.deployment(name = 'customer_data_service', num_replicas = 2)
 class Deployment:
     
     def __init__(self):
