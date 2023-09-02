@@ -22,6 +22,12 @@ def check_account_exists(accNum: str):
     raise Exception("Account does not exist")
 
 
+def check_transaction_type(transaction_type: str):
+    if transaction_type in ("credit", "debit", None):
+        return
+    raise Exception("Invalid transaction_type. transaction_type takes on the value 'credit', 'debit' or null.")
+
+
 @type
 class Query:
 
@@ -46,7 +52,8 @@ class Query:
         return list(filter(lambda account: account.accHolderCif == cif, database["accounts"]))
     
     @field(permission_classes = permission_classes)
-    def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]: # TODO: debit, credit, fromCif or toCif
+    def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        check_transaction_type(transaction_type)
         check_customer_exists(cif)
 
         if transaction_type == "credit":
@@ -59,6 +66,7 @@ class Query:
 
     @field(permission_classes = permission_classes)
     def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        check_transaction_type(transaction_type)
         check_account_exists(accNum)
 
         if transaction_type == "credit":
