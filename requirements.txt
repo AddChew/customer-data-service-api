@@ -1,3 +1,4 @@
 strawberry-graphql==0.205.0
 fastapi==0.103.0
 ray[serve]==2.6.1
+python-dotenv==1.0.0
