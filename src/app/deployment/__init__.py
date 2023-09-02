@@ -6,10 +6,12 @@ from ray.serve._private.http_util import BufferedASGISender
 def setup_app():
     from fastapi import FastAPI
     from strawberry import Schema
-    from src.app.schemas.query import Query
+    from src.app.queries import Query
     from strawberry.fastapi import GraphQLRouter
 
-    app = FastAPI()
+    app = FastAPI(
+        title = 'Customer Data Service API',
+    )
     schema = Schema(query = Query)
     graphql_app = GraphQLRouter(schema)
     app.include_router(graphql_app, prefix = '/graphql')
@@ -17,7 +19,7 @@ def setup_app():
     return app
 
 
-@serve.deployment(num_replicas = 2)
+@serve.deployment(name = 'Customer Data Service', num_replicas = 2)
 class Deployment:
     
     def __init__(self):
