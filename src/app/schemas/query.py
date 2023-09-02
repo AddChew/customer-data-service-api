@@ -10,7 +10,7 @@ from src.app.authorization import IsAuthorized
 class Query:
 
     @field(permission_classes = [IsAuthorized])
-    def customers(self, cif: Optional[str] = None) -> List[Customer]:
+    def customers(self, cif: Optional[str] = None) -> List[Customer]: # TODO: should be getCustomer, getAccount, getAccounts, getTransactions 
         if cif:
             return list(filter(lambda customer: customer.cif == cif, database))
         return database
