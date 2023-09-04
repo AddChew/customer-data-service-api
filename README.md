@@ -28,6 +28,8 @@ openssl rand -hex 16
 
 4. Add the following key-value pairs into the .env file
 ```
+NUM_REPLICAS=2
+
 FIXTURES_SEED=0
 NUM_CUSTOMERS=100
 NUM_ACCOUNTS=300

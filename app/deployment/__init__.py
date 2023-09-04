@@ -1,3 +1,5 @@
+import os
+
 from ray import serve
 from starlette.requests import Request
 from ray.serve._private.http_util import BufferedASGISender
@@ -19,7 +21,7 @@ def setup_app():
     return app
 
 
-@serve.deployment(name = 'customer_data_service', num_replicas = 2)
+@serve.deployment(name = 'customer_data_service', num_replicas = int(os.getenv("NUM_REPLICAS", 1)))
 class Deployment:
     
     def __init__(self):
