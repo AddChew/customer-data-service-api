@@ -1,5 +1,14 @@
 # Customer Data Service API
 
+GraphQL API for customers, accounts and transactions data. 
+
+Built with:
+* MongoDB
+* Motor
+* FastAPI
+* Ray Serve
+* Strawberry
+
 ## Project Setup
 
 1. Navigate into the deploy folder from the project root folder (i.e. customer-data-service-api/deploy)
@@ -17,24 +26,35 @@ touch .env
 openssl rand -hex 16
 ```
 
-4. Copy and paste the generated access key into the .env file as shown below:
+4. Add the following key-value pairs into the .env file
 ```
+FIXTURES_SEED=0
+NUM_CUSTOMERS=100
+NUM_ACCOUNTS=300
+NUM_TRANSACTIONS=1000
+
+MONGO_INITDB_ROOT_USERNAME=<your mongodb username>
+MONGO_INITDB_ROOT_PASSWORD=<your mongodb password>
+
+CUSTOMERS_DATABASE=customers_data
+
+CUSTOMERS_COLLECTION=customers
+ACCOUNTS_COLLECTION=accounts
+TRANSACTIONS_COLLECTION=transactions
+
 ACCESS_KEY=<your generated access key>
 ```
 
-5. Add the following key-value pairs into the .env file as shown below:
-```
-MONGO_INITDB_ROOT_USERNAME=<your mongodb username>
-MONGO_INITDB_ROOT_PASSWORD=<your mongodb password>
-```
-
-6. Spin up containers
-```
-docker compose build
-```
-
-7. Execute the following terminal command
+5. Build docker image and start containers
 ```shell
-cd ..
-serve run app.main:deployment
+docker compose up -d build
 ```
+
+6. Navigate to the following urls to access the respective services
+
+| URL                              | Service       |
+| -------------------------------- |-------------- |
+| http://localhost:8000/graphql    | GraphiQL      |
+| http://localhost:8000/docs       | SwaggerUI     |
+| http://localhost:8000/redoc      | Redoc         |
+| http://localhost:8265/#/overview | Ray dashboard |
