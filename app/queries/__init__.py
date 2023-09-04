@@ -1,24 +1,25 @@
 from typing import List, Optional
 from strawberry import type, field
-from app.database import database
+
 from app.authorization import IsAuthorized
 from app.schemas import Customer, Account, Transaction
+from app.database.connection import customers_collection, accounts_collection, transactions_collection
 
 
 permission_classes = [IsAuthorized]
 
 
-def check_customer_exists(cif: str):
-    for customer in database["customers"]:
-        if customer.cif == cif:
-            return customer
+async def check_customer_exists(cif: str):
+    customer = await customers_collection.find_one({"cif": cif})
+    if customer:
+        return Customer(**customer)
     raise Exception("Customer does not exist")
 
 
-def check_account_exists(accNum: str):
-    for account in database["accounts"]:
-        if account.accNum == accNum:
-            return account
+async def check_account_exists(accNum: str):
+    account = await accounts_collection.find_one({"accNum": accNum})
+    if account:
+        return Account(**account)
     raise Exception("Account does not exist")
 
 
@@ -32,47 +33,66 @@ def check_transaction_type(transaction_type: str):
 class Query:
 
     @field(permission_classes = permission_classes)
-    def getCustomer(cif: str) -> Customer:
-        return check_customer_exists(cif)
+    async def getCustomer(cif: str) -> Customer:
+        return await check_customer_exists(cif)
 
     @field(permission_classes = permission_classes)
-    def getAccount(accNum: str) -> Account:
-        return check_account_exists(accNum)
+    async def getAccount(accNum: str) -> Account:
+        return await check_account_exists(accNum)
     
     @field(permission_classes = permission_classes)
-    def getTransaction(refId: str) -> Transaction:
-        for transaction in database["transactions"]:
-            if transaction.refId == refId:
-                return transaction
+    async def getTransaction(refId: str) -> Transaction:
+        transaction = await transactions_collection.find_one({"refId": refId})
+        if transaction:
+            return Transaction(**transaction)
         raise Exception("Transaction does not exist")
     
     @field(permission_classes = permission_classes)
-    def getAccounts(cif: str) -> List[Account]:
-        check_customer_exists(cif)
-        return list(filter(lambda account: account.accHolderCif == cif, database["accounts"]))
+    async def getAccounts(cif: str) -> List[Account]:
+        await check_customer_exists(cif)
+        accounts = accounts_collection.find({"accHolderCif": cif})
+        return [Account(**account) async for account in accounts]    
     
     @field(permission_classes = permission_classes)
-    def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-        check_transaction_type(transaction_type)
-        check_customer_exists(cif)
+    async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        await check_transaction_type(transaction_type)
+        await check_customer_exists(cif)
 
         if transaction_type == "credit":
-            return list(filter(lambda transaction: transaction.toCif == cif, database["transactions"]))
+            filters = {"toCif": cif}
+            
+        elif transaction_type == "debit":
+            filters = {"fromCif": cif}
 
-        if transaction_type == "debit":
-            return list(filter(lambda transaction: transaction.fromCif == cif, database["transactions"]))
-        
-        return list(filter(lambda transaction: (transaction.fromCif == cif) or (transaction.toCif == cif), database["transactions"])) 
+        else:
+            filters = {
+                { 
+                    "$or": [
+                        {"fromCif": { "$eq": cif }}, 
+                        {"toCif": { "$eq": cif }},
+                    ]
+                }
+            }
+        return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
 
     @field(permission_classes = permission_classes)
-    def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-        check_transaction_type(transaction_type)
-        check_account_exists(accNum)
+    async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        await check_transaction_type(transaction_type)
+        await check_account_exists(accNum)
 
         if transaction_type == "credit":
-            return list(filter(lambda transaction: transaction.toAccNum == accNum, database["transactions"]))
+            filters = {"toAccNum": accNum}
+            
+        elif transaction_type == "debit":
+            filters = {"fromAccNum": accNum}
 
-        if transaction_type == "debit":
-            return list(filter(lambda transaction: transaction.fromAccNum == accNum, database["transactions"]))
-        
-        return list(filter(lambda transaction: (transaction.fromAccNum == accNum) or (transaction.toAccNum == accNum), database["transactions"]))
+        else:
+            filters = {
+                { 
+                    "$or": [
+                        {"fromAccNum": { "$eq": accNum }}, 
+                        {"toAccNum": { "$eq": accNum }},
+                    ]
+                }
+            }
+        return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
