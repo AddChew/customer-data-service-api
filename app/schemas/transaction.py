@@ -4,6 +4,7 @@ from strawberry import type
 
 @type
 class Transaction:
+    _id: str
     refId: str
     fromCif: str
     fromAccNum: str

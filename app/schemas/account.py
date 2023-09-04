@@ -4,6 +4,7 @@ from strawberry import type
 
 @type
 class Account:
+    _id: str
     accNum: str
     accHolderCif: str
     accHolderName: str
