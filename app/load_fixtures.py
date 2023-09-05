@@ -15,18 +15,21 @@ def load_fixture(collection_name: str, data: List[Dict]):
 
 
 if __name__ == '__main__':
+    customers = generate_customers_fixture()
+    accounts = generate_accounts_fixture(customers)
+    transactions = generate_transactions_fixture(accounts)
 
     load_fixture(
         collection_name = settings.customers_collection, 
-        data = generate_customers_fixture()
+        data = customers
     )
 
     load_fixture(
         collection_name = settings.accounts_collection, 
-        data = generate_accounts_fixture()
+        data = accounts
     )
 
     load_fixture(
         collection_name = settings.transactions_collection, 
-        data = generate_transactions_fixture()
+        data = transactions
     )
