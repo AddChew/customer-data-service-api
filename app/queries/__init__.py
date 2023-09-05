@@ -55,7 +55,7 @@ class Query:
     
     @field(permission_classes = permission_classes)
     async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-        await check_transaction_type(transaction_type)
+        check_transaction_type(transaction_type)
         await check_customer_exists(cif)
 
         if transaction_type == "credit":
@@ -66,18 +66,16 @@ class Query:
 
         else:
             filters = {
-                { 
-                    "$or": [
-                        {"fromCif": { "$eq": cif }}, 
-                        {"toCif": { "$eq": cif }},
-                    ]
-                }
+                "$or": [
+                    {"fromCif": { "$eq": cif }}, 
+                    {"toCif": { "$eq": cif }},
+                ]
             }
         return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
 
     @field(permission_classes = permission_classes)
     async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-        await check_transaction_type(transaction_type)
+        check_transaction_type(transaction_type)
         await check_account_exists(accNum)
 
         if transaction_type == "credit":
@@ -87,12 +85,10 @@ class Query:
             filters = {"fromAccNum": accNum}
 
         else:
-            filters = {
-                { 
-                    "$or": [
-                        {"fromAccNum": { "$eq": accNum }}, 
-                        {"toAccNum": { "$eq": accNum }},
-                    ]
-                }
+            filters = { 
+                "$or": [
+                    {"fromAccNum": { "$eq": accNum }}, 
+                    {"toAccNum": { "$eq": accNum }},
+                ]
             }
         return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
