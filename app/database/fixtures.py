@@ -1,6 +1,7 @@
 import os
 import re
 from faker import Faker
+from datetime import datetime
 from faker.providers import DynamicProvider
 
 
@@ -11,6 +12,7 @@ num_transactions = int(os.getenv('NUM_TRANSACTIONS', 5000))
 
 Faker.seed(seed)
 fake = Faker()
+time = datetime.min.time()
 
 
 def generate_customers_fixture():
@@ -22,10 +24,10 @@ def generate_customers_fixture():
         customer = dict(
             cif = fake.unique.bban(),
             name = fake.unique.name(),
-            dateOfBirth = dateOfBirth,
+            dateOfBirth = datetime.combine(dateOfBirth, time),
             address = fake.unique.address(),
             nationality = fake.country_code(),
-            joinDate = joinDate,
+            joinDate = datetime.combine(joinDate, time),
         )
         customers.append(customer)
     return customers
@@ -57,7 +59,7 @@ def generate_accounts_fixture(customers: list):
             accHolderName = customer.get("name"),
             accType = fake.credit_card_provider(),
             currency = 'USD',
-            createDate = createDate,
+            createDate = datetime.combine(createDate, time),
             accStatus = fake.status()
         )
         accounts.append(account)
@@ -85,12 +87,13 @@ def generate_transactions_fixture(accounts: list):
             toAccNum = to_account.get("accNum"),
             amount = float(re.sub(r'[$,]', '', fake.pricetag())),
             currency = "USD",
-            transDate = transDate
+            transDate = datetime.combine(transDate, time)
         )
         transactions.append(transaction)
     return transactions
 
 
+# TODO: setup script for load_fixture
 # TODO: move fastapi into docker
 # TODO: pytest
 # TODO: docstring
