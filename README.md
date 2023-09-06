@@ -49,7 +49,7 @@ ACCESS_KEY=<your generated access key>
 
 5. Build docker image and start containers
 ```shell
-docker compose up -d build
+docker compose up -d --build
 ```
 
 6. Navigate to the following urls to access the respective services
