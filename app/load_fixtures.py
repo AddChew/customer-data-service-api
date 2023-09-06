@@ -9,6 +9,13 @@ database = client.get_database(settings.customers_database)
 
 
 def load_fixture(collection_name: str, data: List[Dict]):
+    """
+    Load data fixture into collection.
+
+    Args:
+        collection_name (str): Name of collection to load data into.
+        data (List[Dict]): Data to load into collection.
+    """
     database.drop_collection(collection_name)
     collection = database.get_collection(collection_name)
     collection.insert_many(data)
