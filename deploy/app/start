@@ -5,4 +5,4 @@ set -o pipefail
 set -o nounset
 
 python app/load_fixtures.py
-serve run app.main:deployment --port 8000
+serve run app.main:deployment --host 0.0.0.0 --port 8000
