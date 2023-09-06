@@ -93,7 +93,6 @@ def generate_transactions_fixture(accounts: list):
     return transactions
 
 
-# TODO: move fastapi into docker
 # TODO: pytest
 # TODO: docstring
 # TODO: setup github actions
