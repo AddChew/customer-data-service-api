@@ -4,6 +4,9 @@ from strawberry import type
 
 @type
 class Transaction:
+    """
+    Transaction GraphQL Type Schema.
+    """
     _id: str
     refId: str
     fromCif: str

@@ -4,6 +4,9 @@ from strawberry import type
 
 @type
 class Customer:
+    """
+    Customer GraphQL Type Schema.
+    """
     _id: str
     cif: str
     name: str

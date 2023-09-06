@@ -4,6 +4,9 @@ from strawberry import type
 
 @type
 class Account:
+    """
+    Account GraphQL Type Schema.
+    """
     _id: str
     accNum: str
     accHolderCif: str
