@@ -2,6 +2,7 @@ import os
 import re
 from faker import Faker
 from datetime import datetime
+from typing import List, Dict
 from faker.providers import DynamicProvider
 
 
@@ -15,7 +16,13 @@ fake = Faker()
 time = datetime.min.time()
 
 
-def generate_customers_fixture():
+def generate_customers_fixture() -> List[Dict]:
+    """
+    Randomly generate a list of customers.
+
+    Returns:
+        List[Dict]: Randomly generated list of customers.
+    """
     customers = []
     for _ in range(num_customers):
         dateOfBirth = fake.date_of_birth(minimum_age = 21, maximum_age = 80)
@@ -33,7 +40,16 @@ def generate_customers_fixture():
     return customers
 
 
-def generate_accounts_fixture(customers: list):
+def generate_accounts_fixture(customers: list) -> List[Dict]:
+    """
+    Randomly generate a list of customer accounts.
+
+    Args:
+        customers (list): List of customers to generate accounts for.
+
+    Returns:
+        List[Dict]: Randomly generated list of customer accounts.
+    """
     accounts = []
 
     customer_provider = DynamicProvider(
@@ -66,7 +82,16 @@ def generate_accounts_fixture(customers: list):
     return accounts
 
 
-def generate_transactions_fixture(accounts: list):
+def generate_transactions_fixture(accounts: list) -> List[Dict]:
+    """
+    Randomly generate a list of customer transactions.
+
+    Args:
+        accounts (list): List of accounts to generate transactions for.
+
+    Returns:
+        List[Dict]: Randomly generated list of transactions.
+    """
     transactions = []
     account_provider = DynamicProvider(
         provider_name = "account",
@@ -94,5 +119,4 @@ def generate_transactions_fixture(accounts: list):
 
 
 # TODO: pytest
-# TODO: docstring
 # TODO: setup github actions
