@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+python app/load_fixtures.py
+serve run app.main:deployment --port 8000
