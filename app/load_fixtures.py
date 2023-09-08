@@ -1,7 +1,6 @@
 from typing import List, Dict
 from database import settings
 from pymongo import MongoClient
-from database.fixtures import generate_customers_fixture, generate_accounts_fixture, generate_transactions_fixture
 
 
 client = MongoClient(settings.mongo_uri)
@@ -22,6 +21,8 @@ def load_fixture(collection_name: str, data: List[Dict]):
 
 
 if __name__ == '__main__':
+    from database.fixtures import generate_customers_fixture, generate_accounts_fixture, generate_transactions_fixture
+
     customers = generate_customers_fixture()
     accounts = generate_accounts_fixture(customers)
     transactions = generate_transactions_fixture(accounts)
