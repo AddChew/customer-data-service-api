@@ -9,21 +9,54 @@ from app.database.connection import customers_collection, accounts_collection, t
 permission_classes = [IsAuthorized]
 
 
-async def check_customer_exists(cif: str):
+async def check_customer_exists(cif: str) -> Customer:
+    """
+    Check if a customer exists in the database.
+
+    Args:
+        cif (str): Cif of customer to query from database.
+
+    Raises:
+        Exception: Raised when customer does not exist.
+
+    Returns:
+        Customer: Customer object.
+    """
     customer = await customers_collection.find_one({"cif": cif})
     if customer:
         return Customer(**customer)
     raise Exception("Customer does not exist")
 
 
-async def check_account_exists(accNum: str):
+async def check_account_exists(accNum: str) -> Account:
+    """
+    Check if an account exists in the database.
+
+    Args:
+        accNum (str): Account number of account.
+
+    Raises:
+        Exception: Raised when account does not exist.
+
+    Returns:
+        Account: Account object.
+    """
     account = await accounts_collection.find_one({"accNum": accNum})
     if account:
         return Account(**account)
     raise Exception("Account does not exist")
 
 
-def check_transaction_type(transaction_type: str):
+def check_transaction_type(transaction_type: str | None):
+    """
+    heck if transaction type is one of "credit", "debit" or None.
+
+    Args:
+        transaction_type (str | None): Transaction type to check.
+
+    Raises:
+        Exception: Raised when transaction type is not one of "credit", "debit" or None.
+    """
     if transaction_type in ("credit", "debit", None):
         return
     raise Exception("Invalid transaction_type. transaction_type takes on the value 'credit', 'debit' or null.")

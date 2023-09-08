@@ -7,9 +7,9 @@ from faker.providers import DynamicProvider
 
 
 seed = int(os.getenv('FIXTURES_SEED', 0))
-num_customers = int(os.getenv('NUM_CUSTOMERS', 100))
-num_accounts = int(os.getenv('NUM_ACCOUNTS', 300))
-num_transactions = int(os.getenv('NUM_TRANSACTIONS', 5000))
+num_customers = int(os.getenv('NUM_CUSTOMERS', 10))
+num_accounts = int(os.getenv('NUM_ACCOUNTS', 30))
+num_transactions = int(os.getenv('NUM_TRANSACTIONS', 100))
 
 Faker.seed(seed)
 fake = Faker()
