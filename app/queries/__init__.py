@@ -67,14 +67,44 @@ class Query:
 
     @field(permission_classes = permission_classes)
     async def getCustomer(cif: str) -> Customer:
+        """
+        Retrieve customer information based on cif.
+
+        Args:
+            cif (str): Cif of customer to retrieve information on.
+
+        Returns:
+            Customer: Customer object.
+        """
         return await check_customer_exists(cif)
 
     @field(permission_classes = permission_classes)
     async def getAccount(accNum: str) -> Account:
+        """
+        Retrieve account details based on account number.
+
+        Args:
+            accNum (str): Account number to retrieve information on.
+
+        Returns:
+            Account: Account object.
+        """
         return await check_account_exists(accNum)
     
     @field(permission_classes = permission_classes)
     async def getTransaction(refId: str) -> Transaction:
+        """
+        Retrieve transaction details based on reference id.
+
+        Args:
+            refId (str): Transaction reference id to retrieve information on.
+
+        Raises:
+            Exception: Raised when transaction does not exist.
+
+        Returns:
+            Transaction: Transaction object.
+        """
         transaction = await transactions_collection.find_one({"refId": refId})
         if transaction:
             return Transaction(**transaction)
@@ -82,12 +112,31 @@ class Query:
     
     @field(permission_classes = permission_classes)
     async def getAccounts(cif: str) -> List[Account]:
+        """
+        Retrieve list of accounts belonging to a customer.
+
+        Args:
+            cif (str): Cif of customer to retrieve accounts for.
+
+        Returns:
+            List[Account]: List of Account objects.
+        """
         await check_customer_exists(cif)
         accounts = accounts_collection.find({"accHolderCif": cif})
         return [Account(**account) async for account in accounts]    
     
     @field(permission_classes = permission_classes)
     async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        """
+        Retrieve transactions by customer cif.
+
+        Args:
+            cif (str): Cif of customer to retrieve transactions for.
+            transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
+
+        Returns:
+            List[Transaction]: List of Transaction objects.
+        """
         check_transaction_type(transaction_type)
         await check_customer_exists(cif)
 
@@ -108,6 +157,16 @@ class Query:
 
     @field(permission_classes = permission_classes)
     async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
+        """
+        Retrieve transactions by account number.
+
+        Args:
+            accNum (str): Account number to retrieve transactions on.
+            transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
+
+        Returns:
+            List[Transaction]: List of Transaction objects.
+        """
         check_transaction_type(transaction_type)
         await check_account_exists(accNum)
 
