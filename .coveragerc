@@ -1,0 +1,7 @@
+[run]
+    branch = true
+    omit = */tests/*
+    source = ./app
+
+[report]
+    show_missing = true
