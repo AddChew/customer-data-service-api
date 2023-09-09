@@ -5,7 +5,10 @@ from app.database.fixtures import generate_customers_fixture, generate_accounts_
 
 class TestFixtures:
 
-    def setup_method(self):
+    def setup_class(self):
+        """
+        Setup state to be used across tests.
+        """
         self.customers_dicts = generate_customers_fixture()
         self.accounts_dicts = generate_accounts_fixture(self.customers_dicts)
         self.transactions_dicts = generate_transactions_fixture(self.accounts_dicts)
@@ -35,6 +38,9 @@ class TestFixtures:
         assert all(isinstance(Transaction(_id = 'id', **transaction), Transaction) for transaction in self.transactions_dicts)
 
     def test_load_fixture(self):
+        """
+        Test load_fixture function.
+        """
         collection_name = "test_collection"
         database = mock.MongoClient().get_database("test_database")
         data = [{"name": f"record {i}"} for i in range(100)]
