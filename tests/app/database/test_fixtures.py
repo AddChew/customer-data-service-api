@@ -1,5 +1,6 @@
+import mongomock as mock
 from app.schemas import Customer, Account, Transaction
-from app.database.fixtures import generate_customers_fixture, generate_accounts_fixture, generate_transactions_fixture
+from app.database.fixtures import generate_customers_fixture, generate_accounts_fixture, generate_transactions_fixture, load_fixture
 
 
 class TestFixtures:
@@ -32,3 +33,12 @@ class TestFixtures:
         assert len(self.transactions_dicts) == 100
         assert all(isinstance(transaction, dict) for transaction in self.transactions_dicts)
         assert all(isinstance(Transaction(_id = 'id', **transaction), Transaction) for transaction in self.transactions_dicts)
+
+    def test_load_fixture(self):
+        collection_name = "test_collection"
+        database = mock.MongoClient().get_database("test_database")
+        data = [{"name": f"record {i}"} for i in range(100)]
+
+        load_fixture(database, collection_name, data)
+        assert collection_name in database.list_collection_names()
+        assert [doc for doc in database[collection_name].find()] == data
