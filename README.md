@@ -64,3 +64,22 @@ docker compose up -d --build
 | http://localhost:8000/docs       | SwaggerUI     |
 | http://localhost:8000/redoc      | Redoc         |
 | http://localhost:8265/#/overview | Ray dashboard |
+
+## How To Run Unittests
+
+1. Navigate to project root folder (i.e. customer-data-service-api) 
+
+2. Install the necessary dependencies
+```shell
+pip install -r requirements-dev.txt
+```
+
+3. Execute unittests
+```shell
+coverage run -m pytest
+```
+
+4. Check test coverage
+```shell
+coverage report -m --fail-under=75
+```
