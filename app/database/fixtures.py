@@ -3,6 +3,7 @@ import re
 from faker import Faker
 from datetime import datetime
 from typing import List, Dict
+from pymongo.database import Database
 from faker.providers import DynamicProvider
 
 
@@ -116,6 +117,20 @@ def generate_transactions_fixture(accounts: list) -> List[Dict]:
         )
         transactions.append(transaction)
     return transactions
+
+
+def load_fixture(database: Database, collection_name: str, data: List[Dict]):
+    """
+    Load data fixture into collection.
+
+    Args:
+        database (Database): Database to load data into.
+        collection_name (str): Name of collection to load data into.
+        data (List[Dict]): Data to load into collection.
+    """
+    database.drop_collection(collection_name)
+    collection = database.get_collection(collection_name)
+    collection.insert_many(data)
 
 
 # TODO: pytest
