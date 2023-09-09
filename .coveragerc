@@ -1,7 +1,9 @@
 [run]
     branch = true
-    omit = */tests/*
     source = ./app
+    omit = 
+            */tests/*
+            ./app/load_fixtures.py
 
 [report]
     show_missing = true
