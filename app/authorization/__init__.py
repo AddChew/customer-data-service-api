@@ -5,7 +5,7 @@ from strawberry.types.info import Info
 from strawberry.permission import BasePermission
 
 
-accessKey = os.getenv('ACCESS_KEY')
+accessKey = os.getenv('ACCESS_KEY', 'test')
 
 
 class IsAuthorized(BasePermission):
