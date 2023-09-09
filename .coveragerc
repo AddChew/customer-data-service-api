@@ -4,6 +4,7 @@
     omit = 
             */tests/*
             ./app/load_fixtures.py
+            ./app/main.py
 
 [report]
     show_missing = true
