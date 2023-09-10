@@ -1,3 +1,5 @@
+[![Unit Tests](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml/badge.svg)](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml)
+
 # Customer Data Service API
 
 GraphQL API for customers, accounts and transactions data. 
