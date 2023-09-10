@@ -693,7 +693,7 @@ class TestQuery:
 
         query = query_builder(
             query_name = "getTransactionsByCif",
-            arguments = [{"name": "cif", "value": '"2"'}],
+            arguments = [{"name": "cif", "value": '"2"'}, {"name": "transactionType", "value": "null"}],
             fields = [
                 "refId",
                 "amount",
