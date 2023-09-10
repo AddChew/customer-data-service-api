@@ -1,10 +1,80 @@
 import pytest
 import datetime
 
+from typing import List, Dict
 from app.deployment import setup_app
 from fastapi.testclient import TestClient
 from mongomock_motor import AsyncMongoMockClient
 from graphql_query import Argument, Operation, Query
+
+
+date = datetime.datetime.combine(datetime.date(2023, 9, 10), datetime.datetime.min.time())
+date_string = date.strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def query_builder(query_name: str, arguments: List[Dict], fields: list) -> str:
+    """
+    Generate GraphQL query string.
+
+    Args:
+        query_name (str): Name of query.
+        arguments (List[Dict]): List of arguments, with each argument being a dictionary with 
+            the format: {"name": <name>, "value": <value>}.
+        fields (list): Fields to include in query response.
+
+    Returns:
+        str: GraphQL query string.
+    """
+    arguments = [Argument(**argument) for argument in arguments]
+    query = Query(
+        name = query_name,
+        arguments = arguments,
+        fields = fields
+    )
+    operation = Operation(name = "Query", type = "query", queries = [query])
+    return operation.render()
+
+
+@pytest.fixture
+async def mock_mongo(monkeypatch):
+    """
+    Fixture to monkeypatch mongo collections.
+    """
+    client = AsyncMongoMockClient()
+    database = client.get_database("customers_data")
+
+    customers_collection = database.get_collection("customers")
+    accounts_collection = database.get_collection("accounts")
+    transactions_collection = database.get_collection("transactions")
+
+    customers_dicts = [
+        {
+            "cif": f"{i}",
+            "name": f"name {i}",
+            "dateOfBirth": date,
+            "address": f"address {i}",
+            "nationality": f"nationality {i}",
+            "joinDate": date
+        }
+        for i in range(11)
+    ]
+    await customers_collection.insert_many(customers_dicts)
+    monkeypatch.setattr("app.queries.customers_collection", customers_collection)
+
+    accounts_dicts = [
+        dict(
+            accNum = f"{i}",
+            accHolderCif = f"{i}",
+            accHolderName = f"name {i}",
+            accType = f"accType {i}",
+            currency = f"currency {i}",
+            createDate = date,
+            accStatus = f"accStatus {i}",
+        )
+        for i in range(10)
+    ]
+    await accounts_collection.insert_many(accounts_dicts)
+    monkeypatch.setattr("app.queries.accounts_collection", accounts_collection)
 
 
 class TestQuery:
@@ -18,22 +88,9 @@ class TestQuery:
         self.graphql_route = "/graphql"
         self.headers = {"accessKey": "test"}
 
-        date = datetime.date(2023, 9, 10)
-        time = datetime.datetime.min.time()
-        self.date = datetime.datetime.combine(date, time)
-        self.date_string = self.date.strftime("%Y-%m-%dT%H:%M:%S")
-
-        client = AsyncMongoMockClient()
-        database = client.get_database("customers_data")
-
-        self.customers_collection = database.get_collection("customers")
-        self.accounts_collection = database.get_collection("accounts")
-        self.transactions_collection = database.get_collection("transactions")
-
-        cif = Argument(name = "cif", value = '"0"')
-        getCustomer = Query(
-            name = "getCustomer",
-            arguments = [cif],
+        self.getCustomerQuery = query_builder(
+            query_name = "getCustomer",
+            arguments = [{"name": "cif", "value": '"0"'}],
             fields = [
                 "cif",
                 "name",
@@ -43,8 +100,6 @@ class TestQuery:
                 "joinDate",
             ]
         )
-        operation = Operation(name = "Query", type = "query", queries = [getCustomer])
-        self.getCustomerQuery = operation.render()
 
     def test_missing_access_key(self):
         """
@@ -78,24 +133,11 @@ class TestQuery:
         assert json_response["errors"][0]["path"] == ["getCustomer"]
 
     @pytest.mark.asyncio
-    async def test_getCustomer_exists(self, monkeypatch):
+    async def test_getCustomer_exists(self, mock_mongo):
         """
         Test getCustomer method where queried customer exists.
         """
-        customers_dicts = [
-            {
-                "cif": f"{i}",
-                "name": f"name {i}",
-                "dateOfBirth": self.date,
-                "address": f"address {i}",
-                "nationality": f"nationality {i}",
-                "joinDate": self.date
-            }
-            for i in range(11)
-        ]
-        await self.customers_collection.insert_many(customers_dicts)
-        monkeypatch.setattr("app.queries.customers_collection", self.customers_collection)
-
+        await mock_mongo
         response = self.client.get(
             self.graphql_route,
             params = {"query": self.getCustomerQuery},
@@ -107,21 +149,21 @@ class TestQuery:
         assert json_response["data"]["getCustomer"] == {
             "cif": "0",
             "name": "name 0",
-            "dateOfBirth": self.date_string,
+            "dateOfBirth": date_string,
             "address": "address 0",
             "nationality": "nationality 0",
-            "joinDate": self.date_string
+            "joinDate": date_string
         }
 
     @pytest.mark.asyncio
-    async def test_getCustomer_does_not_exist(self, monkeypatch):
+    async def test_getCustomer_does_not_exist(self, mock_mongo):
         """
         Test getCustomer method where queried customer does not exist.
         """
-        cif = Argument(name = "cif", value = '"11"')
-        getCustomer = Query(
-            name = "getCustomer",
-            arguments = [cif],
+        await mock_mongo
+        query = query_builder(
+            query_name = "getCustomer",
+            arguments = [{"name": "cif", "value": '"11"'}],
             fields = [
                 "cif",
                 "name",
@@ -131,10 +173,6 @@ class TestQuery:
                 "joinDate",
             ]
         )
-        operation = Operation(name = "Query", type = "query", queries = [getCustomer])
-        query = operation.render()
-        monkeypatch.setattr("app.queries.customers_collection", self.customers_collection)
-
         response = self.client.get(
             self.graphql_route,
             params = {"query": query},
@@ -148,29 +186,14 @@ class TestQuery:
         assert json_response["errors"][0]["path"] == ["getCustomer"]
 
     @pytest.mark.asyncio
-    async def test_getAccount_exists(self, monkeypatch):
+    async def test_getAccount_exists(self, mock_mongo):
         """
         Test getAccount method where queried account exists.
         """
-        accounts_dicts = [
-            dict(
-                accNum = f"{i}",
-                accHolderCif = f"{i}",
-                accHolderName = f"name {i}",
-                accType = f"accType {i}",
-                currency = f"currency {i}",
-                createDate = self.date,
-                accStatus = f"accStatus {i}",
-            )
-            for i in range(10)
-        ]
-        await self.accounts_collection.insert_many(accounts_dicts)
-        monkeypatch.setattr("app.queries.accounts_collection", self.accounts_collection)
-
-        accNum = Argument(name = "accNum", value = '"0"')
-        getAccount = Query(
-            name = "getAccount",
-            arguments = [accNum],
+        await mock_mongo
+        query = query_builder(
+            query_name = "getAccount",
+            arguments = [{"name": "accNum", "value": '"0"'}],
             fields = [
                 "accHolderCif",
                 "accHolderName",
@@ -178,12 +201,9 @@ class TestQuery:
                 "accStatus",
                 "accType",
                 "createDate",
-                "currency"
+                "currency",                
             ]
         )
-        operation = Operation(name = "Query", type = "query", queries = [getAccount])
-        query = operation.render()
-
         response = self.client.get(
             self.graphql_route,
             params = {"query": query},
@@ -198,21 +218,19 @@ class TestQuery:
             "accNum": "0",
             "accStatus": "accStatus 0",
             "accType": "accType 0",
-            "createDate": self.date_string,
+            "createDate": date_string,
             "currency": "currency 0"
         }
 
     @pytest.mark.asyncio
-    async def test_getAccount_does_not_exist(self, monkeypatch):
+    async def test_getAccount_does_not_exist(self, mock_mongo):
         """
         Test getAccount method where queried account does not exist.
         """
-        monkeypatch.setattr("app.queries.accounts_collection", self.accounts_collection)
-
-        accNum = Argument(name = "accNum", value = '"10"')
-        getAccount = Query(
-            name = "getAccount",
-            arguments = [accNum],
+        await mock_mongo
+        query = query_builder(
+            query_name = "getAccount",
+            arguments = [{"name": "accNum", "value": '"10"'}],
             fields = [
                 "accHolderCif",
                 "accHolderName",
@@ -220,12 +238,9 @@ class TestQuery:
                 "accStatus",
                 "accType",
                 "createDate",
-                "currency"
+                "currency",                
             ]
         )
-        operation = Operation(name = "Query", type = "query", queries = [getAccount])
-        query = operation.render()
-
         response = self.client.get(
             self.graphql_route,
             params = {"query": query},
@@ -237,6 +252,8 @@ class TestQuery:
         assert json_response["data"] is None
         assert json_response["errors"][0]["message"] == "Account does not exist"
         assert json_response["errors"][0]["path"] == ["getAccount"]
+
+    # 3 cases, customer no exist, customer exist but no acc, customer exist have acc
    
     # @field(permission_classes = permission_classes)
     # async def getTransaction(refId: str) -> Transaction:

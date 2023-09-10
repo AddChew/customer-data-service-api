@@ -81,5 +81,5 @@ coverage run -m pytest
 
 4. Check test coverage
 ```shell
-coverage report -m --fail-under=90
+coverage report -m --fail-under=95
 ```
