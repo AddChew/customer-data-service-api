@@ -747,32 +747,65 @@ class TestQuery:
         assert json_response["errors"][0]["message"] == "Account does not exist"
         assert json_response["errors"][0]["path"] == ["getTransactionsByAccNum"]
 
-    # @field(permission_classes = permission_classes)
-    # async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-    #     """
-    #     Retrieve transactions by account number.
+    @pytest.mark.asyncio
+    async def test_getTransactionsByAccNum_exist_credit(self, mock_mongo):
+        """
+        Test getTransactionsByAccNum method for credit transactions.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"1"'}, {"name": "transactionType", "value": '"credit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     Args:
-    #         accNum (str): Account number to retrieve transactions on.
-    #         transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByAccNum"] == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
 
-    #     Returns:
-    #         List[Transaction]: List of Transaction objects.
-    #     """
-    #     check_transaction_type(transaction_type)
-    #     await check_account_exists(accNum)
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"0"'}, {"name": "transactionType", "value": '"credit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     if transaction_type == "credit":
-    #         filters = {"toAccNum": accNum}
-            
-    #     elif transaction_type == "debit":
-    #         filters = {"fromAccNum": accNum}
-
-    #     else:
-    #         filters = { 
-    #             "$or": [
-    #                 {"fromAccNum": { "$eq": accNum }}, 
-    #                 {"toAccNum": { "$eq": accNum }},
-    #             ]
-    #         }
-    #     return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByAccNum"] == []
