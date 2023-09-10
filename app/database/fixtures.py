@@ -132,6 +132,4 @@ def load_fixture(database: Database, collection_name: str, data: List[Dict]):
     collection = database.get_collection(collection_name)
     collection.insert_many(data)
 
-
-# TODO: pytest
 # TODO: setup github actions
