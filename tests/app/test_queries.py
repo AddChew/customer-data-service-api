@@ -91,7 +91,7 @@ class TestQuery:
                 "nationality": f"nationality {i}",
                 "joinDate": self.date
             }
-            for i in range(10)
+            for i in range(11)
         ]
         await self.customers_collection.insert_many(customers_dicts)
         monkeypatch.setattr("app.queries.customers_collection", self.customers_collection)
@@ -118,7 +118,7 @@ class TestQuery:
         """
         Test getCustomer method where queried customer does not exist.
         """
-        cif = Argument(name = "cif", value = '"10"')
+        cif = Argument(name = "cif", value = '"11"')
         getCustomer = Query(
             name = "getCustomer",
             arguments = [cif],
