@@ -436,36 +436,223 @@ class TestQuery:
         assert json_response["errors"][0]["message"] == "Transaction does not exist"
         assert json_response["errors"][0]["path"] == ["getTransaction"]
 
+    @pytest.mark.asyncio
+    async def test_getTransactions_invalid_transaction_type(self, mock_mongo):
+        """
+        Test invalid transaction type for getTransactionsByCif and getTransactionsByAccNum methods.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"0"'}, {"name": "transactionType", "value": '"invalid"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    # @field(permission_classes = permission_classes)
-    # async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-    #     """
-    #     Retrieve transactions by customer cif.
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Invalid transaction_type. transaction_type takes on the value 'credit', 'debit' or null."
+        assert json_response["errors"][0]["path"] == ["getTransactionsByCif"]
 
-    #     Args:
-    #         cif (str): Cif of customer to retrieve transactions for.
-    #         transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"0"'}, {"name": "transactionType", "value": '"invalid"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     Returns:
-    #         List[Transaction]: List of Transaction objects.
-    #     """
-    #     check_transaction_type(transaction_type)
-    #     await check_customer_exists(cif)
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Invalid transaction_type. transaction_type takes on the value 'credit', 'debit' or null."
+        assert json_response["errors"][0]["path"] == ["getTransactionsByAccNum"]
 
-    #     if transaction_type == "credit":
-    #         filters = {"toCif": cif}
-            
-    #     elif transaction_type == "debit":
-    #         filters = {"fromCif": cif}
+    @pytest.mark.asyncio
+    async def test_getTransactionsByCif_customer_does_not_exist(self, mock_mongo):
+        """
+        Test getTransactionsByCif method where queried customer does not exist.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"11"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     else:
-    #         filters = {
-    #             "$or": [
-    #                 {"fromCif": { "$eq": cif }}, 
-    #                 {"toCif": { "$eq": cif }},
-    #             ]
-    #         }
-    #     return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Customer does not exist"
+        assert json_response["errors"][0]["path"] == ["getTransactionsByCif"]
+
+    @pytest.mark.asyncio
+    async def test_getTransactionsByCif_exist_credit(self, mock_mongo):
+        """
+        Test getTransactionsByCif method for credit transactions.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"1"'}, {"name": "transactionType", "value": '"credit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"0"'}, {"name": "transactionType", "value": '"credit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == []
+
+    @pytest.mark.asyncio
+    async def test_getTransactionsByCif_exist_debit(self, mock_mongo):
+        """
+        Test getTransactionsByCif method for debit transactions.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"0"'}, {"name": "transactionType", "value": '"debit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"1"'}, {"name": "transactionType", "value": '"debit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == []
+
+    # test transaction_type None x 2 for two cifs, one empty list
 
     # @field(permission_classes = permission_classes)
     # async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
