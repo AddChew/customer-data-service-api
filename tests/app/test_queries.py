@@ -652,7 +652,68 @@ class TestQuery:
         json_response = response.json()
         assert json_response["data"]["getTransactionsByCif"] == []
 
-    # test transaction_type None x 2 for two cifs, one empty list
+    @pytest.mark.asyncio
+    async def test_getTransactionsByCif_exist_credit_debit(self, mock_mongo):
+        """
+        Test getTransactionsByCif method for both credit and debit transactions.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"0"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+        query = query_builder(
+            query_name = "getTransactionsByCif",
+            arguments = [{"name": "cif", "value": '"2"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByCif"] == []
 
     # @field(permission_classes = permission_classes)
     # async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
