@@ -94,7 +94,6 @@ class TestQuery:
             for i in range(10)
         ]
         await self.customers_collection.insert_many(customers_dicts)
-
         monkeypatch.setattr("app.queries.customers_collection", self.customers_collection)
 
         response = self.client.get(
@@ -148,20 +147,97 @@ class TestQuery:
         assert json_response["errors"][0]["message"] == "Customer does not exist"
         assert json_response["errors"][0]["path"] == ["getCustomer"]
 
+    @pytest.mark.asyncio
+    async def test_getAccount_exists(self, monkeypatch):
+        """
+        Test getAccount method where queried account exists.
+        """
+        accounts_dicts = [
+            dict(
+                accNum = f"{i}",
+                accHolderCif = f"{i}",
+                accHolderName = f"name {i}",
+                accType = f"accType {i}",
+                currency = f"currency {i}",
+                createDate = self.date,
+                accStatus = f"accStatus {i}",
+            )
+            for i in range(10)
+        ]
+        await self.accounts_collection.insert_many(accounts_dicts)
+        monkeypatch.setattr("app.queries.accounts_collection", self.accounts_collection)
 
-    # @field(permission_classes = permission_classes)
-    # async def getAccount(accNum: str) -> Account:
-    #     """
-    #     Retrieve account details based on account number.
+        accNum = Argument(name = "accNum", value = '"0"')
+        getAccount = Query(
+            name = "getAccount",
+            arguments = [accNum],
+            fields = [
+                "accHolderCif",
+                "accHolderName",
+                "accNum",
+                "accStatus",
+                "accType",
+                "createDate",
+                "currency"
+            ]
+        )
+        operation = Operation(name = "Query", type = "query", queries = [getAccount])
+        query = operation.render()
 
-    #     Args:
-    #         accNum (str): Account number to retrieve information on.
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     Returns:
-    #         Account: Account object.
-    #     """
-    #     return await check_account_exists(accNum)
-    
+        json_response = response.json()
+        assert json_response["data"]["getAccount"] == {
+            "accHolderCif": "0",
+            "accHolderName": "name 0",
+            "accNum": "0",
+            "accStatus": "accStatus 0",
+            "accType": "accType 0",
+            "createDate": self.date_string,
+            "currency": "currency 0"
+        }
+
+    @pytest.mark.asyncio
+    async def test_getAccount_does_not_exist(self, monkeypatch):
+        """
+        Test getAccount method where queried account does not exist.
+        """
+        monkeypatch.setattr("app.queries.accounts_collection", self.accounts_collection)
+
+        accNum = Argument(name = "accNum", value = '"10"')
+        getAccount = Query(
+            name = "getAccount",
+            arguments = [accNum],
+            fields = [
+                "accHolderCif",
+                "accHolderName",
+                "accNum",
+                "accStatus",
+                "accType",
+                "createDate",
+                "currency"
+            ]
+        )
+        operation = Operation(name = "Query", type = "query", queries = [getAccount])
+        query = operation.render()
+
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Account does not exist"
+        assert json_response["errors"][0]["path"] == ["getAccount"]
+   
     # @field(permission_classes = permission_classes)
     # async def getTransaction(refId: str) -> Transaction:
     #     """
