@@ -715,6 +715,38 @@ class TestQuery:
         json_response = response.json()
         assert json_response["data"]["getTransactionsByCif"] == []
 
+    @pytest.mark.asyncio
+    async def test_getTransactionsByAccNum_customer_does_not_exist(self, mock_mongo):
+        """
+        Test getTransactionsByAccNum method where queried customer does not exist.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"11"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Account does not exist"
+        assert json_response["errors"][0]["path"] == ["getTransactionsByAccNum"]
+
     # @field(permission_classes = permission_classes)
     # async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
     #     """
