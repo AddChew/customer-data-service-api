@@ -809,3 +809,66 @@ class TestQuery:
 
         json_response = response.json()
         assert json_response["data"]["getTransactionsByAccNum"] == []
+
+    @pytest.mark.asyncio
+    async def test_getTransactionsByAccNum_exist_debit(self, mock_mongo):
+        """
+        Test getTransactionsByAccNum method for debit transactions.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"0"'}, {"name": "transactionType", "value": '"debit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByAccNum"] == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+        query = query_builder(
+            query_name = "getTransactionsByAccNum",
+            arguments = [{"name": "accNum", "value": '"1"'}, {"name": "transactionType", "value": '"debit"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",      
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getTransactionsByAccNum"] == []
