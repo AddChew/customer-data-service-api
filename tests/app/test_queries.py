@@ -76,6 +76,21 @@ async def mock_mongo(monkeypatch):
     await accounts_collection.insert_many(accounts_dicts)
     monkeypatch.setattr("app.queries.accounts_collection", accounts_collection)
 
+    transactions_dicts = [
+        dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date
+        ),
+    ]
+    await transactions_collection.insert_many(transactions_dicts)
+    monkeypatch.setattr("app.queries.transactions_collection", transactions_collection)
+
 
 class TestQuery:
 
@@ -350,40 +365,78 @@ class TestQuery:
             "currency": "currency 0"
         }]
 
-    # @field(permission_classes = permission_classes)
-    # async def getTransaction(refId: str) -> Transaction:
-    #     """
-    #     Retrieve transaction details based on reference id.
+    @pytest.mark.asyncio
+    async def test_getTransaction_exists(self, mock_mongo):
+        """
+        Test getTransaction method where queried transaction exists.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransaction",
+            arguments = [{"name": "refId", "value": '"0"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",                
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     Args:
-    #         refId (str): Transaction reference id to retrieve information on.
+        json_response = response.json()
+        assert json_response["data"]["getTransaction"] == dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )
 
-    #     Raises:
-    #         Exception: Raised when transaction does not exist.
+    @pytest.mark.asyncio
+    async def test_getTransaction_does_not_exist(self, mock_mongo):
+        """
+        Test getTransaction method where queried transaction does not exist.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getTransaction",
+            arguments = [{"name": "refId", "value": '"100"'}],
+            fields = [
+                "refId",
+                "amount",
+                "currency",
+                "fromAccNum",
+                "fromCif",
+                "toAccNum",
+                "toCif",
+                "transDate",                
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
 
-    #     Returns:
-    #         Transaction: Transaction object.
-    #     """
-    #     transaction = await transactions_collection.find_one({"refId": refId})
-    #     if transaction:
-    #         return Transaction(**transaction)
-    #     raise Exception("Transaction does not exist")
-    
-    # @field(permission_classes = permission_classes)
-    # async def getAccounts(cif: str) -> List[Account]:
-    #     """
-    #     Retrieve list of accounts belonging to a customer.
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Transaction does not exist"
+        assert json_response["errors"][0]["path"] == ["getTransaction"]
 
-    #     Args:
-    #         cif (str): Cif of customer to retrieve accounts for.
 
-    #     Returns:
-    #         List[Account]: List of Account objects.
-    #     """
-    #     await check_customer_exists(cif)
-    #     accounts = accounts_collection.find({"accHolderCif": cif})
-    #     return [Account(**account) async for account in accounts]    
-    
     # @field(permission_classes = permission_classes)
     # async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
     #     """
