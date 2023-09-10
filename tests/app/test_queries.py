@@ -253,8 +253,103 @@ class TestQuery:
         assert json_response["errors"][0]["message"] == "Account does not exist"
         assert json_response["errors"][0]["path"] == ["getAccount"]
 
-    # 3 cases, customer no exist, customer exist but no acc, customer exist have acc
-   
+    @pytest.mark.asyncio
+    async def test_getAccounts_customer_does_not_exist(self, mock_mongo):
+        """
+        Test getAccounts method where queried customer does not exist.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getAccounts",
+            arguments = [{"name": "cif", "value": '"11"'}],
+            fields = [
+                "accHolderCif",
+                "accHolderName",
+                "accNum",
+                "accStatus",
+                "accType",
+                "createDate",
+                "currency",                
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"] is None
+        assert json_response["errors"][0]["message"] == "Customer does not exist"
+        assert json_response["errors"][0]["path"] == ["getAccounts"]
+
+    @pytest.mark.asyncio
+    async def test_getAccounts_customer_exist_no_account(self, mock_mongo):
+        """
+        Test getAccounts method where queried customer does not have any account.
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getAccounts",
+            arguments = [{"name": "cif", "value": '"10"'}],
+            fields = [
+                "accHolderCif",
+                "accHolderName",
+                "accNum",
+                "accStatus",
+                "accType",
+                "createDate",
+                "currency",                
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getAccounts"] == []
+
+    @pytest.mark.asyncio
+    async def test_getAccounts_customer_exist_have_account(self, mock_mongo):
+        """
+        Test getAccounts method where queried customer has account(s).
+        """
+        await mock_mongo
+        query = query_builder(
+            query_name = "getAccounts",
+            arguments = [{"name": "cif", "value": '"0"'}],
+            fields = [
+                "accHolderCif",
+                "accHolderName",
+                "accNum",
+                "accStatus",
+                "accType",
+                "createDate",
+                "currency",                
+            ]
+        )
+        response = self.client.get(
+            self.graphql_route,
+            params = {"query": query},
+            headers = self.headers,
+        )
+        assert response.status_code == 200
+
+        json_response = response.json()
+        assert json_response["data"]["getAccounts"] == [{
+            "accHolderCif": "0",
+            "accHolderName": "name 0",
+            "accNum": "0",
+            "accStatus": "accStatus 0",
+            "accType": "accType 0",
+            "createDate": date_string,
+            "currency": "currency 0"
+        }]
+
     # @field(permission_classes = permission_classes)
     # async def getTransaction(refId: str) -> Transaction:
     #     """

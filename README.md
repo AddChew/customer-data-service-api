@@ -76,7 +76,7 @@ pip install -r requirements-dev.txt
 
 3. Execute unittests
 ```shell
-coverage run -m pytest
+coverage run -m pytest -v
 ```
 
 4. Check test coverage
