@@ -2,14 +2,13 @@
 
 # Customer Data Service API
 
-GraphQL API for customers, accounts and transactions data. 
+REST API for customers, accounts and transactions data. 
 
 Built with:
 * MongoDB
 * Motor
 * FastAPI
 * Ray Serve
-* Strawberry
 
 ## Project Setup
 
@@ -62,7 +61,6 @@ docker compose up -d --build
 
 | URL                              | Service       |
 | -------------------------------- |-------------- |
-| http://localhost:8000/graphql    | GraphiQL      |
 | http://localhost:8000/docs       | SwaggerUI     |
 | http://localhost:8000/redoc      | Redoc         |
 | http://localhost:8265/#/overview | Ray dashboard |
