@@ -2,7 +2,7 @@ import os
 from urllib.parse import quote_plus
 
 
-mongo_host = os.getenv("MONGO_HOST", "mongo")
+mongo_host = os.getenv("MONGO_HOST", "localhost:27017")
 mongo_username = quote_plus(os.getenv("MONGO_INITDB_ROOT_USERNAME", "mongo")) 
 mongo_password = quote_plus(os.getenv("MONGO_INITDB_ROOT_PASSWORD", "mongo"))
 mongo_uri = f"mongodb://{mongo_username}:{mongo_password}@{mongo_host}/"
