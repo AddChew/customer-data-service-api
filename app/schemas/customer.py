@@ -1,11 +1,10 @@
 from datetime import date
-from strawberry import type
+from pydantic import BaseModel
 
 
-@type
-class Customer:
+class Customer(BaseModel):
     """
-    Customer GraphQL Type Schema.
+    Customer Schema.
     """
     _id: str
     cif: str

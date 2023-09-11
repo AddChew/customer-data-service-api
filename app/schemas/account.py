@@ -1,11 +1,10 @@
 from datetime import date
-from strawberry import type
+from pydantic import BaseModel
 
 
-@type
-class Account:
+class Account(BaseModel):
     """
-    Account GraphQL Type Schema.
+    Account Schema.
     """
     _id: str
     accNum: str

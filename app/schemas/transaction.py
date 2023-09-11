@@ -1,11 +1,10 @@
 from datetime import date
-from strawberry import type
+from pydantic import BaseModel
 
 
-@type
-class Transaction:
+class Transaction(BaseModel):
     """
-    Transaction GraphQL Type Schema.
+    Transaction Schema.
     """
     _id: str
     refId: str
