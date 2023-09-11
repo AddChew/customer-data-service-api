@@ -1,13 +1,15 @@
 import os
 
 from ray import serve
-from fastapi import FastAPI
 from app.routers import customers
+from fastapi import FastAPI, Depends
+from app.services.authorization import verify_access_key
 
 
 app = FastAPI(
     title = "Customer Data Service REST API",
-    description = "Documentation for Customer Data Service REST API"
+    description = "Documentation for Customer Data Service REST API",
+    dependencies = [Depends(verify_access_key)],
 )
 app.include_router(customers.router)
 
