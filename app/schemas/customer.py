@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class Customer(BaseModel):
     """
-    Customer Schema.
+    Customer Response Schema.
     """
     _id: str
     cif: str

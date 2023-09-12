@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class Account(BaseModel):
     """
-    Account Schema.
+    Account Response Schema.
     """
     _id: str
     accNum: str

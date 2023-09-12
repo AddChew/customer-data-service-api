@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 class Transaction(BaseModel):
     """
-    Transaction Schema.
+    Transaction Response Schema.
     """
     _id: str
     refId: str

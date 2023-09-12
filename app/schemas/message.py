@@ -3,6 +3,6 @@ from pydantic import BaseModel
 
 class Message(BaseModel):
     """
-    Message Schema.
+    Message Response Schema.
     """
     detail: str
