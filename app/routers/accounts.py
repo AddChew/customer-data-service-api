@@ -32,7 +32,7 @@ async def read_accounts(cif: str = None, accNum: str = None) -> List[Account]:
     Returns:
         List[Account]: List of Account objects.
     """
-    if cif is None and accNum is None:
+    if not any((cif, accNum)):
         raise HTTPException(
             status_code = status.HTTP_400_BAD_REQUEST,
             detail = "Missing cif and/or accNum in query parameters."
