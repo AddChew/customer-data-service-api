@@ -1,7 +1,6 @@
 from fastapi import APIRouter
-from app.schemas import Message
 from app.services import queries
-from app.schemas import Customer
+from app.schemas import Customer, Message
 
 
 router = APIRouter(
