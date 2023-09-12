@@ -13,6 +13,7 @@ app = FastAPI(
 )
 app.include_router(customers.router)
 app.include_router(accounts.router)
+app.include_router(transactions.router)
 
 
 @serve.deployment(name = 'customer_data_service', num_replicas = int(os.getenv("NUM_REPLICAS", 1)))
