@@ -5,9 +5,9 @@ name: Unit Tests
 
 on:
   push:
-    branches: [ "graphql-mongodb" ]
+    branches: [ "graphql-mongodb", "restapi-mongodb" ]
   pull_request:
-    branches: [ "graphql-mongodb" ]
+    branches: [ "graphql-mongodb", "restapi-mongodb" ]
     paths:
       - "app/**"
       - "tests/**"
