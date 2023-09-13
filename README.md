@@ -1,4 +1,4 @@
-[![Unit Tests](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml/badge.svg)](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml)
+[![Unit Tests](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml/badge.svg?branch=restapi-mongodb)](https://github.com/AddChew/customer-data-service-api/actions/workflows/tests.yml)
 
 # Customer Data Service API
 
