@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.services import queries
 from app.schemas import Customer, Message
+from app.services.queries.customers import retrieve_customer
 
 
 router = APIRouter(
@@ -25,4 +25,4 @@ async def read_customer(cif: str) -> Customer:
     Returns:
         Customer: Customer object.
     """
-    return await queries.retrieve_customer(cif)
+    return await retrieve_customer(cif)

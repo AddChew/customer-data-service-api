@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter
 
-from app.services import queries
 from fastapi import HTTPException, status
 from app.schemas import Transaction, Message
+from app.services.queries.transactions import retrieve_transactions
 
 
 router = APIRouter(
@@ -48,7 +48,7 @@ async def read_transactions(refId: str = None, cif: str = None, accNum: str = No
             detail = "Invalid transaction_type in query params. transaction_type takes on the value 'credit', 'debit' or null.",
         )
     
-    return await queries.retrieve_transactions(
+    return await retrieve_transactions(
         refId = refId,
         cif = cif,
         accNum = accNum,

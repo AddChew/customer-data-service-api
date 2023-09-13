@@ -1,9 +1,9 @@
 from typing import List
 from fastapi import APIRouter
 
-from app.services import queries
 from app.schemas import Account, Message
 from fastapi import HTTPException, status
+from app.services.queries.accounts import retrieve_accounts
 
 
 router = APIRouter(
@@ -37,7 +37,7 @@ async def read_accounts(cif: str = None, accNum: str = None) -> List[Account]:
             status_code = status.HTTP_400_BAD_REQUEST,
             detail = "Missing cif and/or accNum in query parameters."
         )
-    return await queries.retrieve_accounts(
+    return await retrieve_accounts(
         cif = cif,
         accNum = accNum,
     )
