@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from app.deployment import setup_app
 
-
-def test_setup_app():
+# TODO: Update github actions
+def test_setup_app(): # TODO: Update pytest
     """
     Test setup_app function.
     """

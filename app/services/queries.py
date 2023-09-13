@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 from fastapi import HTTPException, status
 
 from app.schemas import Customer, Account, Transaction
@@ -57,99 +57,52 @@ async def retrieve_accounts(cif: str = None, accNum: str = None) -> List[Account
         detail = "Account does not exist."
     )
 
-# def check_transaction_type(transaction_type: str | None):
-#     """
-#     heck if transaction type is one of "credit", "debit" or None.
 
-#     Args:
-#         transaction_type (str | None): Transaction type to check.
+async def retrieve_transactions(refId: str = None, cif: str = None, accNum: str = None, transaction_type: str = None) -> List[Transaction]:
+    """
+    Retrieve list of transactions by refId, cif, accNum and transaction_type.
 
-#     Raises:
-#         Exception: Raised when transaction type is not one of "credit", "debit" or None.
-#     """
-#     if transaction_type in ("credit", "debit", None):
-#         return
-#     raise Exception("Invalid transaction_type. transaction_type takes on the value 'credit', 'debit' or null.")
+    Args:
+        refId (str, optional): Transaction reference id of transaction to retrieve. Defaults to None.
+        cif (str, optional): Cif of customer to retrieve transactions for. Defaults to None.
+        accNum (str, optional): Account number of customer to retrieve transactions for. Defaults to None.
+        transaction_type (str, optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
 
+    Raises:
+        HTTPException: Raised when transaction does not exist.
 
-# @type
-# class Query:
-    
-#     @field(permission_classes = permission_classes)
-#     async def getTransaction(refId: str) -> Transaction:
-#         """
-#         Retrieve transaction details based on reference id.
+    Returns:
+        List[Transaction]: List of Transaction objects.
+    """
+    prefix_map = {
+        "credit": "to",
+        "debit": "from",
+        None: ("to", "from"), 
+    }
+    prefix = prefix_map[transaction_type]
 
-#         Args:
-#             refId (str): Transaction reference id to retrieve information on.
+    filters = {}
+    if cif:
+        await retrieve_customer(cif)
+        if isinstance(prefix, tuple):
+            filters["$or"] = [{f"{p}Cif": {"$eq": cif}} for p in prefix]
+        else:
+            filters[f"{prefix}Cif"] = cif
 
-#         Raises:
-#             Exception: Raised when transaction does not exist.
+    if accNum:
+        await retrieve_accounts(cif, accNum)
+        if isinstance(prefix, tuple):
+            filters["$or"] = [{f"{p}AccNum": {"$eq": accNum}} for p in prefix]
+        else:
+            filters[f"{prefix}AccNum"] = accNum
 
-#         Returns:
-#             Transaction: Transaction object.
-#         """
-#         transaction = await transactions_collection.find_one({"refId": refId})
-#         if transaction:
-#             return Transaction(**transaction)
-#         raise Exception("Transaction does not exist")
-    
-#     @field(permission_classes = permission_classes)
-#     async def getTransactionsByCif(cif: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-#         """
-#         Retrieve transactions by customer cif.
+    if refId:
+        filters["refId"] = refId
 
-#         Args:
-#             cif (str): Cif of customer to retrieve transactions for.
-#             transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
-
-#         Returns:
-#             List[Transaction]: List of Transaction objects.
-#         """
-#         check_transaction_type(transaction_type)
-#         await check_customer_exists(cif)
-
-#         if transaction_type == "credit":
-#             filters = {"toCif": cif}
-            
-#         elif transaction_type == "debit":
-#             filters = {"fromCif": cif}
-
-#         else:
-#             filters = {
-#                 "$or": [
-#                     {"fromCif": { "$eq": cif }}, 
-#                     {"toCif": { "$eq": cif }},
-#                 ]
-#             }
-#         return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
-
-#     @field(permission_classes = permission_classes)
-#     async def getTransactionsByAccNum(accNum: str, transaction_type: Optional[str] = None) -> List[Transaction]:
-#         """
-#         Retrieve transactions by account number.
-
-#         Args:
-#             accNum (str): Account number to retrieve transactions on.
-#             transaction_type (Optional[str], optional): Transaction type. Takes on the values "credit", "debit" or None. Defaults to None.
-
-#         Returns:
-#             List[Transaction]: List of Transaction objects.
-#         """
-#         check_transaction_type(transaction_type)
-#         await check_account_exists(accNum)
-
-#         if transaction_type == "credit":
-#             filters = {"toAccNum": accNum}
-            
-#         elif transaction_type == "debit":
-#             filters = {"fromAccNum": accNum}
-
-#         else:
-#             filters = { 
-#                 "$or": [
-#                     {"fromAccNum": { "$eq": accNum }}, 
-#                     {"toAccNum": { "$eq": accNum }},
-#                 ]
-#             }
-#         return [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
+    transactions = [Transaction(**transaction) async for transaction in transactions_collection.find(filters)]
+    if transactions:
+        return transactions
+    raise HTTPException(
+        status_code = status.HTTP_404_NOT_FOUND,
+        detail = "Transaction does not exist",
+    )
