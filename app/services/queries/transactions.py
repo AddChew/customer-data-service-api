@@ -53,5 +53,5 @@ async def retrieve_transactions(refId: str = None, cif: str = None, accNum: str 
         return transactions
     raise HTTPException(
         status_code = status.HTTP_404_NOT_FOUND,
-        detail = "Transaction does not exist",
+        detail = "Transaction does not exist.",
     )
