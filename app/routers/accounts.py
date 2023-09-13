@@ -9,7 +9,7 @@ from app.services.queries.accounts import retrieve_accounts
 router = APIRouter(
     prefix = "/accounts",
     tags = ["Accounts"],
-    responses = {401: {"model": Message}, 404: {"model": Message}},
+    responses = {400: {"model": Message}, 401: {"model": Message}, 404: {"model": Message}},
 )
 
 

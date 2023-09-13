@@ -9,7 +9,7 @@ from app.services.queries.transactions import retrieve_transactions
 router = APIRouter(
     prefix = "/transactions",
     tags = ["Transactions"],
-    responses = {401: {"model": Message}, 404: {"model": Message}},
+    responses = {400: {"model": Message}, 401: {"model": Message}, 404: {"model": Message}},
 )
 
 
