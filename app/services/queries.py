@@ -4,7 +4,7 @@ from fastapi import HTTPException, status
 from app.schemas import Customer, Account, Transaction
 from app.database.connection import customers_collection, accounts_collection, transactions_collection
 
-
+# TODO: split into separate files
 async def retrieve_customer(cif: str) -> Customer:
     """
     Retrieve customer details if it exists in the database.
