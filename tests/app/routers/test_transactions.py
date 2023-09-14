@@ -171,3 +171,107 @@ class TestTransactions:
         assert response.status_code == 404
         json_response = response.json()
         assert json_response["detail"] == "Account does not exist."
+
+    @pytest.mark.asyncio
+    async def test_query_by_refId_cif(self, mock_mongo):
+        """
+        Test query by refId and cif.
+        """
+        await mock_mongo
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "cif": "2"})
+        assert response.status_code == 404
+        json_response = response.json()
+        assert json_response["detail"] == "Transaction does not exist."
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "cif": "0"})
+        assert response.status_code == 200
+        json_response = response.json()
+        assert json_response == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+    @pytest.mark.asyncio
+    async def test_query_by_refId_accNum(self, mock_mongo):
+        """
+        Test query by refId and accNum.
+        """
+        await mock_mongo
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "accNum": "2"})
+        assert response.status_code == 404
+        json_response = response.json()
+        assert json_response["detail"] == "Transaction does not exist."
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "accNum": "0"})
+        assert response.status_code == 200
+        json_response = response.json()
+        assert json_response == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+    @pytest.mark.asyncio
+    async def test_query_by_cif_accNum(self, mock_mongo):
+        """
+        Test query by cif and accNum.
+        """
+        await mock_mongo
+
+        response = self.client.get(self.route, headers = self.headers, params = {"cif": "2", "accNum": "2"})
+        assert response.status_code == 404
+        json_response = response.json()
+        assert json_response["detail"] == "Transaction does not exist."
+
+        response = self.client.get(self.route, headers = self.headers, params = {"cif": "0", "accNum": "0"})
+        assert response.status_code == 200
+        json_response = response.json()
+        assert json_response == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
+
+    @pytest.mark.asyncio
+    async def test_query_by_refId_cif_accNum(self, mock_mongo):
+        """
+        Test query by refId, cif and accNum.
+        """
+        await mock_mongo
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "cif": "1", "accNum": "1", "transaction_type": "debit"})
+        assert response.status_code == 404
+        json_response = response.json()
+        assert json_response["detail"] == "Transaction does not exist."
+
+        response = self.client.get(self.route, headers = self.headers, params = {"refId": "0", "cif": "0", "accNum": "0"})
+        assert response.status_code == 200
+        json_response = response.json()
+        assert json_response == [dict(
+            refId = "0",
+            fromCif = "0",
+            fromAccNum = "0",
+            toCif = "1",
+            toAccNum = "1",
+            amount = 1000.00,
+            currency = "USD",
+            transDate = date_string,
+        )]
