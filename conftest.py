@@ -1,7 +1,9 @@
 import pytest
 import datetime
 
+from typing import List, Dict
 from mongomock_motor import AsyncMongoMockClient
+from graphql_query import Argument, Operation, Query
 
 
 date = datetime.datetime.combine(datetime.date(2023, 9, 10), datetime.datetime.min.time())
@@ -63,3 +65,26 @@ async def mock_mongo(monkeypatch):
     ]
     await transactions_collection.insert_many(transactions_dicts)
     monkeypatch.setattr("app.services.queries.transactions.transactions_collection", transactions_collection)
+
+
+def query_builder(query_name: str, arguments: List[Dict], fields: list) -> str:
+    """
+    Generate GraphQL query string.
+
+    Args:
+        query_name (str): Name of query.
+        arguments (List[Dict]): List of arguments, with each argument being a dictionary with 
+            the format: {"name": <name>, "value": <value>}.
+        fields (list): Fields to include in query response.
+
+    Returns:
+        str: GraphQL query string.
+    """
+    arguments = [Argument(**argument) for argument in arguments]
+    query = Query(
+        name = query_name,
+        arguments = arguments,
+        fields = fields
+    )
+    operation = Operation(name = "Query", type = "query", queries = [query])
+    return operation.render()
