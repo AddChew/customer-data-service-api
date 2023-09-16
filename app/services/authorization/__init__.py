@@ -23,10 +23,10 @@ class IsAuthorized(BasePermission):
             bool | Awaitable[bool]: True if the accessKey in the request headers is valid, otherwise False.
         """
         context = info.context
-        request = context.request
+        request = context['request']
         if request.headers.get('accessKey') == accessKey:
             return True
         
-        response = context.response
+        response = context['response']
         response.status_code = 401
         return False

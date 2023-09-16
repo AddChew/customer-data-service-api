@@ -2,6 +2,8 @@ import os
 
 from ray import serve
 from fastapi import FastAPI
+from app.schemas import Message
+
 from starlette.requests import Request
 from ray.serve._private.http_util import BufferedASGISender, RawASGIResponse
 
@@ -18,12 +20,15 @@ def setup_app() -> FastAPI:
     from strawberry.fastapi import GraphQLRouter
 
     app = FastAPI(
-        title = 'Customer Data Service API',
+        title = 'Customer Data Service GraphQLAPI',
+        description = 'Documentation for Customer Data Service GraphQL API',
     )
     schema = Schema(query = Query)
-    graphql_app = GraphQLRouter(schema)
-    app.include_router(graphql_app, prefix = '/graphql')
-
+    app.include_router(
+        router = GraphQLRouter(schema),
+        prefix = '/graphql',
+        responses = {401: {"model": Message}},
+    )
     return app
 
 
