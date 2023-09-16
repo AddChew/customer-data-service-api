@@ -21,7 +21,7 @@ def setup_app() -> FastAPI:
     from strawberry.fastapi import GraphQLRouter
 
     app = FastAPI(
-        title = 'Customer Data Service GraphQLAPI',
+        title = 'Customer Data Service GraphQL API',
         description = 'Documentation for Customer Data Service GraphQL API',
     )
     schema = Schema(query = create_type(name = 'Query', fields = queries))
