@@ -7,7 +7,7 @@ from graphql_query import Argument, Operation, Query
 
 
 date = datetime.datetime.combine(datetime.date(2023, 9, 10), datetime.datetime.min.time())
-date_string = date.strftime("%Y-%m-%d")
+date_string = date.strftime("%Y-%m-%dT%H:%M:%S")
 
 
 @pytest.fixture
