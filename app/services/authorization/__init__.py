@@ -30,3 +30,6 @@ class IsAuthorized(BasePermission):
         response = context['response']
         response.status_code = 401
         return False
+
+
+permission_classes = [IsAuthorized]
