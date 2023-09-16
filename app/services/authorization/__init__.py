@@ -1,28 +1,32 @@
 import os
 
-from fastapi.security.api_key import APIKeyHeader
-from fastapi import Security, HTTPException, status
+from typing import Any, Awaitable
+from strawberry.types.info import Info
+from strawberry.permission import BasePermission
 
 
-access_key = os.getenv('ACCESS_KEY', 'test')
-access_key_header = APIKeyHeader(name = "accessKey", auto_error = False)
+accessKey = os.getenv('ACCESS_KEY', 'test')
 
 
-async def verify_access_key(access_key_header: str = Security(access_key_header)):
+class IsAuthorized(BasePermission):
     """
-    Verify the validity of the accessKey provided in the request headers. 
-    
-    Used to check if a user is permitted to access the resource. If a user is permitted, the 
-    accessKey in his request headers should be valid.
-
-    Args:
-        access_key_header (str, optional): _description_. Defaults to Security(access_key_header).
-
-    Raises:
-        HTTPException: Raised when the accessKey in the request headers is invalid.
+    Permission class to check if a user is permitted to access the resource.
     """
-    if access_key_header != access_key:
-        raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED, 
-            detail = "Missing or invalid access key in request headers",
-        )
+    message = "Missing or invalid access key in request headers"
+
+    async def has_permission(self, source: Any, info: Info, **kwargs: Any) -> bool | Awaitable[bool]:
+        """
+        Method to check if a user is permitted to access the resource. If a user is permitted, the
+        accessKey in his request headers should be valid.
+
+        Returns:
+            bool | Awaitable[bool]: True if the accessKey in the request headers is valid, otherwise False.
+        """
+        context = info.context
+        request = context.request
+        if request.headers.get('accessKey') == accessKey:
+            return True
+        
+        response = context.response
+        response.status_code = 401
+        return False
